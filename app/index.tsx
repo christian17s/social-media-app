@@ -1,5 +1,14 @@
-import { Redirect } from 'expo-router'
+import { styles } from '@/styles/auth.styles';
+import { useAuth } from '@clerk/clerk-expo';
+import { TouchableOpacity, View, Text } from 'react-native';
 
 export default function Index() {
-  return <Redirect href="/(auth)/login"/>;
+  const {signOut}=useAuth()
+  return (
+    <View style={styles.container}>
+      <TouchableOpacity onPress={() => signOut()}>
+        <Text style={{ color: 'white' }}>Signout</Text>
+      </TouchableOpacity>
+    </View>
+  );
 }
