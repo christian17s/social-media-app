@@ -17,7 +17,7 @@ export const createUser = mutation({
       .query("users")
       .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
       .first();
-
+      
     if (existingUser) return;
 
     // create a user in db

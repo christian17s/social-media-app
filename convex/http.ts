@@ -5,6 +5,10 @@ import { api } from "./_generated/api";
 
 const http = httpRouter();
 
+// 1- we need to make sure that the webhook event is coming from clerk
+// 2- if so, we will listen for the "user.created" event
+// 3- we wil save the user to the database
+
 // ctx=context
 http.route({
   path: "/clerk-webhook",
@@ -16,7 +20,7 @@ http.route({
     }
 
     // check headers
-    const svix_id = request.headers.get("svix-id");
+    const svix_id = request.headers.get("svix-id") as string;
     const svix_signature = request.headers.get("svix-signature");
     const svix_timestamp = request.headers.get("svix-timestamp");
 
@@ -35,9 +39,9 @@ http.route({
     // verify webhook
     try {
       evt = wh.verify(body, {
-        svix_id: svix_id,
-        svix_timestamp: svix_timestamp,
-        svix_signature: svix_signature,
+        "svix_id": svix_id,
+        "svix_timestamp": svix_timestamp,
+        "svix_signature": svix_signature,
       }) as any;
     } catch (err) {
       console.error("Error verifying webhook:", err);
