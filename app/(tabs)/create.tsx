@@ -18,12 +18,14 @@ import { COLORS } from "@/constants/theme";
 import { Image } from "expo-image";
 
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 export default function CreateScreen() {
   const router = useRouter();
-  const user = useUser();
+  const { user } = useUser();
 
   const [caption, setCaption] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -40,7 +42,6 @@ export default function CreateScreen() {
     if (!result.canceled) setSelectedImage(result.assets[0].uri);
   };
 
-  
   const generateUploadUrl = useMutation(api.posts.generateUploadUrl);
   const createPost = useMutation(api.posts.createPost);
 
@@ -50,9 +51,30 @@ export default function CreateScreen() {
     try {
       setIsSharing(true);
       const uploadUrl = await generateUploadUrl();
+
+      const uploadResult = await FileSystem.uploadAsync(
+        uploadUrl,
+        selectedImage,
+        {
+          httpMethod: "POST",
+          uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+          mimeType: "image/jpeg",
+        }
+      );
+
+      if (uploadResult.status !== 200) throw new Error("Failed to upload image");
+
+      const { storageId } = JSON.parse(uploadResult.body);
+      await createPost({ storageId, caption });
+
+      router.push("/(tabs)");
+
     } catch (error) {
-  }
-}
+      console.log("Error sharing post");
+    } finally {
+      setIsSharing(false);
+    }
+  };
 
   if (!selectedImage) {
     return (
